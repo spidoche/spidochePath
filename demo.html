@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
-    <meta name="google" value="notranslate">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
 
     <title>FORM BUILDER</title>
 
     <link rel="stylesheet" href="css/reset.css">
 
     <style>
-      html {background: #444444;}
-      #canvas { background:#444; animation: spin linear 80000ms infinite;}
+      html {background: #ccc;}
+      #canvas { background:#b9b9b9; animation: spin linear 80000ms infinite; display: block; margin:auto;}
+      nav { text-align: center; padding: 10px 0;}
+      button { padding: 10px; background: #fff; border: 1px solid #999; cursor: pointer}
+      button:hover {background: #ddd}
       /*
       #canvas { animation: spin linear 80000ms infinite;}
       @keyframes spin{
@@ -24,6 +27,165 @@
 
     <canvas id="canvas" width="640" height="480"></canvas>
 
+    <nav>
+        <button id="path_01">path 01</button>
+        <button id="path_02">path 02</button>
+        <button id="path_03">path 03</button>
+    </nav>
+
     <script src="js/TweenMax.min.js"></script>
+    <script src="js/stats.min.js"></script>
+    <script src="js/dat.gui.min.js"></script>
     <script src="js/drawpath.js"></script>
+    <script>
+
+        // Store Paths data
+        var paths1 = [
+            [{x:329,y:371},{x:306,y:358},{x:312,y:396}],
+            [{x:300,y:338},{x:239,y:411},{x:306,y:358}],
+            [{x:329,y:371},{x:342,y:329},{x:434,y:358}],
+            [{x:312,y:396},{x:335,y:435},{x:329,y:371}],
+            [{x:266,y:429},{x:335,y:435},{x:312,y:396}],
+            [{x:434,y:358},{x:401,y:416},{x:329,y:371}],
+            [{x:335,y:435},{x:401,y:416},{x:329,y:371}],
+            [{x:342,y:329},{x:300,y:281},{x:401,y:245}],
+            [{x:342,y:142},{x:434,y:154},{x:440,y:218}],
+            [{x:434,y:358},{x:428,y:282},{x:342,y:329}],
+            [{x:342,y:329},{x:401,y:245},{x:428,y:282}],
+            [{x:202,y:167},{x:311,y:175},{x:202,y:129}],
+            [{x:301,y:142},{x:202,y:129},{x:217,y:77 }],
+            [{x:282,y:216},{x:312,y:175},{x:323,y:189}],
+            [{x:225,y:320},{x:202,y:347},{x:186,y:320}],
+            [{x:341,y:126},{x:390,y:53 },{x:365,y:40 }],
+            [{x:341,y:126},{x:319,y:97 },{x:365,y:40 }],
+            [{x:433,y:154},{x:422,y:91 },{x:341,y:142}],
+            [{x:319,y:97 },{x:365,y:40 },{x:300,y:33 },{x:308,y:101}],
+            [{x:300,y:120},{x:308,y:101},{x:300,y:33 },{x:257,y:42 }],
+            [{x:300,y:331},{x:225,y:320},{x:186,y:320},{x:202,y:347}],
+            [{x:266,y:429},{x:312,y:396},{x:306,y:358},{x:239,y:411}],
+            [{x:301,y:142},{x:217,y:77 },{x:257,y:42 },{x:300,y:120}],
+            [{x:323,y:189},{x:283,y:273},{x:239,y:245},{x:282,y:216}],
+            [{x:300,y:281},{x:283,y:273},{x:323,y:189},{x:401,y:245}],
+            [{x:312,y:175},{x:301,y:142},{x:217,y:77 },{x:202,y:129}],
+            [{x:341,y:142},{x:341,y:126},{x:390,y:53 },{x:422,y:91 }],
+            [{x:239,y:245},{x:282,y:216},{x:323,y:189},{x:312,y:175},{x:202,y:167}],
+            [{x:300,y:331},{x:156,y:269},{x:186,y:320},{x:202,y:347},{x:238,y:411},{x:300,y:338}]
+        ];
+
+        var paths2 = [
+            [{x:319,y:291},{x:306,y:358},{x:322,y:346},{x:319,y:291}],
+            [{x:309,y:408},{x:289,y:371},{x:316,y:388},{x:309,y:408}],
+            [{x:319,y:291},{x:302,y:269},{x:344,y:258},{x:319,y:291}],
+            [{x:322,y:346},{x:355,y:345},{x:319,y:291},{x:322,y:346}],
+            [{x:316,y:389},{x:355,y:345},{x:322,y:346},{x:316,y:389}],
+            [{x:344,y:258},{x:361,y:316},{x:319,y:291},{x:344,y:258}],
+            [{x:355,y:345},{x:361,y:316},{x:319,y:291},{x:355,y:345}],
+            [{x:302,y:269},{x:310,y:211},{x:341,y:140},{x:302,y:269}],
+            [{x:341,y:126},{x:370,y:13} ,{x:335,y:30} ,{x:341,y:126}],
+            [{x:341,y:142},{x:433,y:24} ,{x:540,y:38} ,{x:341,y:142}],
+            [{x:344,y:258},{x:328,y:242},{x:302,y:269},{x:344,y:258}],
+            [{x:302,y:269},{x:341,y:140},{x:328,y:242},{x:302,y:269}],
+            [{x:180,y:100},{x:301,y:165},{x:132,y:49} ,{x:180,y:100}],
+            [{x:308,y:136},{x:132,y:49} ,{x:167,y:37} ,{x:308,y:136}],
+            [{x:341,y:126},{x:324,y:143},{x:335,y:30} ,{x:341,y:126}],
+            [{x:433,y:24}, {x:422,y:21} ,{x:341,y:142},{x:433,y:24}],
+            [{x:303,y:189},{x:302,y:165},{x:341,y:126},{x:303,y:189}],
+            [{x:315,y:436},{x:292,y:457},{x:316,y:470},{x:315,y:436}],
+            [{x:316,y:389},{x:322,y:346},{x:306,y:358},{x:289,y:371},{x:316,y:389}],
+            [{x:308,y:136},{x:167,y:37} ,{x:257,y:42} ,{x:300,y:120},{x:308,y:136}],
+            [{x:303,y:189},{x:311,y:211},{x:209,y:155},{x:241,y:155},{x:303,y:189}],
+            [{x:310,y:211},{x:314,y:186},{x:303,y:189},{x:341,y:140},{x:310,y:211}],
+            [{x:302,y:165},{x:308,y:136},{x:167,y:37} ,{x:132,y:49} ,{x:302,y:165}],
+            [{x:324,y:143},{x:335,y:30} ,{x:300,y:33} ,{x:308,y:136},{x:324,y:143}],
+            [{x:341,y:142},{x:341,y:126},{x:370,y:13} ,{x:422,y:21} ,{x:341,y:142}],
+            [{x:300,y:120},{x:308,y:136},{x:300,y:33} ,{x:257,y:42} ,{x:300,y:120}],
+            [{x:309,y:408},{x:315,y:436},{x:316,y:470},{x:292,y:457},{x:309,y:408}],
+            [{x:209,y:155},{x:241,y:155},{x:303,y:189},{x:302,y:165},{x:180,y:100},{x:209,y:155}],
+            [{x:310,y:408},{x:346,y:439},{x:316,y:470},{x:292,y:457},{x:289,y:371},{x:310,y:409},{x:310,y:408}]
+        ];
+
+
+        var paths3 = [
+            [{x:295,y:386},{x:308,y:333},{x:296,y:385},{x:295,y:386}],
+            [{x:250,y:335},{x:185,y:426},{x:308,y:333},{x:250,y:335}],
+            [{x:295,y:386},{x:308,y:334},{x:400,y:373},{x:295,y:386}],
+            [{x:296,y:385},{x:301,y:450},{x:295,y:386},{x:296,y:385}],
+            [{x:212,y:444},{x:301,y:450},{x:296,y:385},{x:212,y:444}],
+            [{x:400,y:373},{x:367,y:431},{x:295,y:386},{x:400,y:373}],
+            [{x:301,y:450},{x:367,y:431},{x:295,y:386},{x:301,y:450}],
+            [{x:308,y:334},{x:338,y:284},{x:442,y:231},{x:308,y:334}],
+            [{x:293,y:175},{x:356,y:68} ,{x:331,y:55} ,{x:293,y:175}],
+            [{x:324,y:189},{x:415,y:148},{x:442,y:231},{x:324,y:189}],
+            [{x:400,y:373},{x:431,y:297},{x:308,y:334},{x:400,y:373}],
+            [{x:308,y:334},{x:442,y:231},{x:431,y:297},{x:308,y:334}],
+            [{x:128,y:168},{x:258,y:179},{x:142,y:123},{x:128,y:168}],
+            [{x:293,y:175},{x:142,y:123},{x:183,y:82} ,{x:293,y:175}],
+            [{x:293,y:175},{x:293,y:175},{x:331,y:55} ,{x:293,y:175}],
+            [{x:415,y:148},{x:388,y:106},{x:324,y:189},{x:415,y:148}],
+            [{x:212,y:208},{x:238,y:209},{x:234,y:239},{x:212,y:208}],
+            [{x:197,y:307},{x:148,y:362},{x:132,y:335},{x:197,y:307}],
+            [{x:212,y:444},{x:296,y:385},{x:308,y:333},{x:185,y:426},{x:212,y:444}],
+            [{x:293,y:175},{x:183,y:82} ,{x:223,y:55} ,{x:293,y:175},{x:293,y:175}],
+            [{x:234,y:239},{x:230,y:298},{x:113,y:239},{x:211,y:208},{x:234,y:239}],
+            [{x:338,y:284},{x:336,y:218},{x:324,y:189},{x:442,y:231},{x:338,y:284}],
+            [{x:258,y:179},{x:293,y:175},{x:183,y:82} ,{x:142,y:123},{x:258,y:179}],
+            [{x:293,y:175},{x:331,y:55} ,{x:266,y:48} ,{x:293,y:175},{x:293,y:175}],
+            [{x:324,y:189},{x:293,y:175},{x:356,y:68} ,{x:388,y:106},{x:324,y:189}],
+            [{x:293,y:175},{x:293,y:175},{x:266,y:48} ,{x:223,y:55} ,{x:293,y:175}],
+            [{x:230,y:298},{x:197,y:307},{x:132,y:335},{x:148,y:362},{x:230,y:298}],
+            [{x:113,y:239},{x:211,y:208},{x:238,y:209},{x:258,y:179},{x:128,y:168},{x:113,y:239}],
+            [{x:230,y:298},{x:113,y:239},{x:132,y:335},{x:148,y:362},{x:184,y:426},{x:250,y:335},{x:230,y:298}]
+        ];
+
+
+        // Add stats
+        var stats = new Stats();
+        stats.setMode( 1 );
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild( stats.domElement );
+
+
+        // Init the path
+        var s = new SpidochePath({
+            id : document.getElementById('canvas'),
+            paths : paths1,
+            fill_color : '#000'
+        });
+
+
+        // Morph
+        document.getElementById('path_01').addEventListener('click',function(){
+            s.morph(paths1);
+        },false);
+
+        document.getElementById('path_02').addEventListener('click',function(){
+            s.morph(paths2);
+        },false);
+
+        document.getElementById('path_03').addEventListener('click',function(){
+            s.morph(paths3);
+        },false);
+
+
+        // Add gui
+        var gui = new dat.GUI();
+        gui.addColor (s, 'canvas_bg').onChange(function(newValue) {
+           document.getElementById('canvas').style.backgroundColor = newValue;
+        });
+        gui.addColor (s, 'fill_color');
+        gui.addColor (s, 'cercle_color');
+        gui.addColor (s, 'stroke_color');
+        gui.add(s, 'speed', 0, 30);
+        gui.add(s, 'min_dist_anim', 0, 150);
+        gui.add(s, 'min_dist_fill', 0, 150);
+        gui.add(s, 'cercle_radius', 0, 40);
+        gui.add(s, 'show_line');
+        gui.add(s, 'show_point');
+        gui.add(s, 'fill');
+
+
+
+    </script>
   </body></html>

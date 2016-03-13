@@ -1,9 +1,3 @@
-/*
- * SpidochePath
- *
- * Version : 0.2
- * Author  : Spidoche
- */
 function SpidochePath(settings){
 
     "use strict";
@@ -14,8 +8,8 @@ function SpidochePath(settings){
     // Get settings
     this.settings = settings || {};
     this.canvas = this.settings.id || {};
-    this.paths = this.settings.paths || [];
-    this.canvas_bg = "#b9b9b9";
+    this.paths = this.settings.paths || {};
+    this.canvas_bg = "#333";
     this.stroke_color = "#ffffff";
     this.cercle_color = "#ffffff";
     this.fill_color = this.settings.fill_color || "#ffffff";
@@ -27,10 +21,6 @@ function SpidochePath(settings){
     this.show_point = true;
     this.fill = true;
     this.initRatio = 1;
-    this.paths_orginal = [];
-    this.is_morph = false;
-    this.morph_path = null;
-    this.speed = 2;
 
     this.ctx = this.canvas.getContext('2d');
     this.initWidth = this.canvas.width;
@@ -58,10 +48,20 @@ SpidochePath.prototype = {
         this.mouse.x = 0;
         this.mouse.y = 0;
 
-        // Store_orginal_pos(paths)
+        // Debugger get x / y on click
+        // x_y_getter();
+        var paths = this.paths;
 
-        this.paths = JSON.parse(JSON.stringify(this.paths));
-        this.paths_orginal = JSON.parse(JSON.stringify(this.paths));
+        // Store_orginal_pos(paths)
+        for(var i = 0; i < paths.length; i++){
+
+            var path = paths[i];
+            for(var j = 0; j < paths[i].length; j++){
+                path[j].x_orginal = path[j].x;
+                path[j].y_orginal = path[j].y;
+            }
+
+        }
 
         // Run
         this.event_handler();
@@ -75,22 +75,13 @@ SpidochePath.prototype = {
 
         var ctx = this.ctx;
         var paths = this.paths;
-        var paths_orginal = this.paths_orginal;
         var mouse = this.mouse;
-        var morph_paths = this.morph_path;
 
         // Draw lines
-        for(var i = 0; i < this.paths.length; i++){
+        for(var i = 0; i < paths.length; i++){
 
             var path = paths[i];
-            var path_orginal = paths_orginal[i];
-
-
             this.opacity = 0 ;
-
-            if(this.is_morph){
-                var morph_path = morph_paths[i];
-            }
 
             ctx.beginPath();
             ctx.moveTo(path[0].x,path[0].y);
@@ -100,29 +91,21 @@ SpidochePath.prototype = {
                 ctx.lineTo(path[j].x,path[j].y);
 
                 // fill the path
-                if(this.is_near( path_orginal[j], this.min_dist_fill, mouse )){
+                if(this.is_near( path[j], this.min_dist_fill, mouse )){
                     this.opacity += 0.1;
                     //paths[i].active = 1;
                 }
 
-                if(this.is_morph){
-                    this.animateTo(path[j], morph_path[j].x , morph_path[j].y);
-
-                    path_orginal[j].x = morph_path[j].x;
-                    path_orginal[j].y = morph_path[j].y;
-                }
-
                 // animate path
-                if(this.is_near( path_orginal[j], this.min_dist_anim, mouse )){
+                if(this.is_near( path[j], this.min_dist_anim, mouse )){
                     this.animateTo(path[j],mouse.x,mouse.y);
                     path[j].move = 1;
                 }else if(path[j].move === 1){
-                    this.animateTo(path[j],path_orginal[j].x, path_orginal[j].y);
+                    this.animateTo(path[j],path[j].x_orginal, path[j].y_orginal);
                     path[j].move = 0;
                 }
 
             }
-
             if(this.show_line){
                 ctx.lineTo(path[0].x,path[0].y); //close the path
                 ctx.strokeStyle = this.stroke_color;
@@ -154,8 +137,6 @@ SpidochePath.prototype = {
                 }
             }
         }
-
-        if(this.is_morph) this.is_morph = false;
 
     },
 
@@ -207,26 +188,15 @@ SpidochePath.prototype = {
 
     // Move animation
     animateTo : function(el,x,y){
-        TweenLite.to(el, this.speed, {x:x, y:y, ease: Elastic.easeOut.config(1, 0.3)});
-    },
-
-    // Set morph
-    morph : function(paths){
-        this.is_morph = true;
-        this.morph_path = paths;
-    },
-
-    // Get random
-    get_random : function(min,max){
-        return Math.random() * (max-min) + min;
+        TweenLite.to(el, 2, {x:x, y:y, ease: Elastic.easeOut.config(1, 0.3)});
     },
 
     // Check if mouse if near a point
     is_near : function( point, distance) {
-        var left = point.x - distance,
-            top = point.y - distance,
-            right = point.x + distance,
-            bottom = point.y + distance ,
+        var left = point.x_orginal - distance,
+            top = point.y_orginal - distance,
+            right = point.x_orginal + distance,
+            bottom = point.y_orginal + distance ,
             x = this.mouse.x,
             y = this.mouse.y;
 
@@ -259,8 +229,8 @@ SpidochePath.prototype = {
                                 context.backingStorePixelRatio || 1;
 
         var ratio = devicePixelRatio / backingStoreRatio;
-        var c = canvas;
-        var canvas_ratio = c.width/c.height;
+        var c = this.canvas;
+        var canvas_ratio = canvas.width/canvas.height;
         var initWidth = this.initWidth; //canvas.width;
 
         this.initRatio = ratio;
