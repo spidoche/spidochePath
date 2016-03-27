@@ -1,8 +1,9 @@
 /*
  * SpidochePath
  *
- * Version : 0.2
+ * Version : 0.3
  * Author  : Spidoche
+ *
  */
 function SpidochePath(settings){
 
@@ -37,6 +38,11 @@ function SpidochePath(settings){
     this.mouse = {};
     this.click = {};
 
+    // RequestAnimationFrame polyfill only if not support
+    if ( !window.requestAnimationFrame ) {
+        this.raf();
+    }
+
     // Run
     this.init();
 
@@ -58,8 +64,7 @@ SpidochePath.prototype = {
         this.mouse.x = 0;
         this.mouse.y = 0;
 
-        // Store_orginal_pos(paths)
-
+        // copy the paths
         this.paths = JSON.parse(JSON.stringify(this.paths));
         this.paths_orginal = JSON.parse(JSON.stringify(this.paths));
 
@@ -312,6 +317,21 @@ SpidochePath.prototype = {
 
         //return 'rgba('+h.join(',')+')';
         return h.join(',');
+    },
+
+    // RequestAnimationFrame polyfill (@paulirish http://paulirish.com)
+    raf : function(){
+        window.requestAnimationFrame = ( function() {
+
+            return window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function( callback, element ) {
+                window.setTimeout( callback, 1000 / 60 );
+            };
+
+        } )();
     }
 
 
